@@ -1,0 +1,126 @@
+x-laravel-environment: &laravel-environment
+  APP_NAME: Subscription Billing
+  APP_ENV: local
+  APP_DEBUG: "true"
+  APP_URL: http://localhost:8080
+  APP_KEY: base64:Vj9+qepR2I3hV6rCBmWNAzRtkpRMuRDFofb1gHN3U84=
+  LOG_CHANNEL: stderr
+  DB_CONNECTION: mysql
+  DB_HOST: db
+  DB_PORT: "3306"
+  DB_DATABASE: subscription_billing
+  DB_USERNAME: subscription_billing
+  DB_PASSWORD: subscription_billing_local
+  CACHE_STORE: redis
+  QUEUE_CONNECTION: redis
+  SESSION_DRIVER: database
+  REDIS_CLIENT: phpredis
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+
+x-laravel-test-environment: &laravel-test-environment
+  APP_ENV: testing
+  APP_DEBUG: "true"
+  APP_KEY: base64:Vj9+qepR2I3hV6rCBmWNAzRtkpRMuRDFofb1gHN3U84=
+  CACHE_STORE: array
+  DB_CONNECTION: sqlite
+  DB_DATABASE: ":memory:"
+  DB_URL: ""
+  QUEUE_CONNECTION: sync
+  SESSION_DRIVER: array
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment: *laravel-environment
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "8080:80"
+    depends_on:
+      app:
+        condition: service_started
+
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: subscription_billing
+      MYSQL_USER: subscription_billing
+      MYSQL_PASSWORD: subscription_billing_local
+      MYSQL_ROOT_PASSWORD: local_root_password
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -plocal_root_password --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  redis:
+    image: redis:7.4-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  bootstrap:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >-
+      sh -c 'for attempt in $$(seq 1 20); do
+      php artisan migrate --force && php artisan db:seed --force && exit 0;
+      echo "Database is not ready yet (attempt $${attempt}/20); retrying in 3 seconds...";
+      sleep 3;
+      done;
+      exit 1'
+    environment: *laravel-environment
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: php artisan test --compact
+    environment: *laravel-test-environment
+    profiles: ["test"]
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: php artisan queue:work redis --sleep=1 --tries=3 --timeout=60
+    environment: *laravel-environment
+    depends_on:
+      bootstrap:
+        condition: service_completed_successfully
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: php artisan schedule:work
+    environment: *laravel-environment
+    depends_on:
+      bootstrap:
+        condition: service_completed_successfully
+
+volumes:
+  mysql-data:
