@@ -85,11 +85,11 @@ docker compose --profile test run --rm test
 
 | Item | Demo value |
 | --- | --- |
-| Merchant | `Acme Analytics` |
-| API key | `demo-acme-api-key` |
+| Merchant | `Palani Analytics` |
+| API key | `demo-palani-api-key` |
 | Plans | Starter and Growth |
-| Dashboard customers | Ada Lovelace, Ben Bitdiddle, Cora Churn |
-| Completed invoice-cycle demo | Bill Demo |
+| Dashboard customers | Palani, Raj, Santhosh, Mani, Sathis |
+| Completed invoice-cycle demo | Sathis |
 
 The seed is safe to run again:
 
@@ -102,7 +102,7 @@ php artisan db:seed
 All endpoints use the seeded local API key:
 
 ```bash
-export BILLING_API_KEY='demo-acme-api-key'
+export BILLING_API_KEY='demo-palani-api-key'
 ```
 
 ### Record usage
@@ -113,7 +113,7 @@ curl --request POST http://localhost:8080/api/v1/usage \
   --header 'Idempotency-Key: demo-usage-001' \
   --header 'Content-Type: application/json' \
   --data '{
-    "customer_external_id": "cust_ada",
+    "customer_external_id": "cust_palani",
     "quantity": 42,
     "occurred_at": "2026-09-14T08:30:00Z",
     "metadata": {"source": "readme-demo"}
@@ -124,7 +124,7 @@ Send the exact request again to see `meta.duplicate: true`. Reusing the same ide
 
 ### Change a subscription plan
 
-On a freshly seeded database, Ada's subscription is `1` and Growth is plan `2`.
+On a freshly seeded database, Palani's subscription is `1` and Growth is plan `2`.
 
 ```bash
 curl --request POST http://localhost:8080/api/v1/subscriptions/1/plan-changes \
@@ -140,7 +140,7 @@ Plan changes must be at midnight UTC and inside the active billing cycle. The ol
 
 ### View the merchant dashboard
 
-On a freshly seeded database, Acme Analytics is merchant `1`.
+On a freshly seeded database, Palani Analytics is merchant `1`.
 
 ```bash
 curl http://localhost:8080/api/v1/merchants/1/dashboard \
@@ -151,7 +151,7 @@ The response contains the five highest-usage customers, an estimated overage-rev
 
 ## Demonstrate background billing immediately
 
-The scheduler runs aggregation hourly and invoice dispatching daily at `00:15 UTC`. For a quick review, the seeded Bill Demo subscription has a completed cycle. Dispatch its invoice now:
+The scheduler runs aggregation hourly and invoice dispatching daily at `00:15 UTC`. For a quick review, the seeded Sathis subscription has a completed cycle. Dispatch its invoice now:
 
 ```bash
 php artisan billing:dispatch-due-invoices

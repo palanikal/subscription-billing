@@ -17,7 +17,7 @@ class DashboardPageTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee('Subscription intelligence')
-            ->assertSee('Acme Analytics')
+            ->assertSee('Palani Analytics')
             ->assertSee('Top customers');
     }
 }

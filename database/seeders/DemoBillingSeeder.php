@@ -25,34 +25,40 @@ class DemoBillingSeeder extends Seeder
         $currentUsageDate = min($now->startOfDay(), $monthStart->addDays(9));
         $previousUsageDate = $previousMonthStart->addDays($monthStart->diffInDays($currentUsageDate));
         $merchant = Merchant::query()->updateOrCreate(
-            ['name' => 'Acme Analytics'],
+            ['name' => 'Palani Analytics'],
             ['timezone' => 'UTC'],
         );
 
         ApiKey::query()->updateOrCreate(
             ['merchant_id' => $merchant->id, 'name' => 'Demo API key'],
-            ['key_hash' => hash('sha256', 'demo-acme-api-key'), 'revoked_at' => null],
+            ['key_hash' => hash('sha256', 'demo-palani-api-key'), 'revoked_at' => null],
         );
 
         $starter = $this->plan($merchant, 'Starter', 3_000, 100, 5);
         $growth = $this->plan($merchant, 'Growth', 6_000, 200, 3);
-        $ada = $this->customer($merchant, 'cust_ada', 'Ada Lovelace', 'ada@example.test');
-        $ben = $this->customer($merchant, 'cust_ben', 'Ben Bitdiddle', 'ben@example.test');
-        $churnRisk = $this->customer($merchant, 'cust_churn', 'Cora Churn', 'cora@example.test');
-        $billingDemo = $this->customer($merchant, 'cust_billing_demo', 'Bill Demo', 'bill@example.test');
+        $palani = $this->customer($merchant, 'cust_palani', 'Palani', 'palani@example.test');
+        $raj = $this->customer($merchant, 'cust_raj', 'Raj', 'raj@example.test');
+        $santhosh = $this->customer($merchant, 'cust_santhosh', 'Santhosh', 'santhosh@example.test');
+        $mani = $this->customer($merchant, 'cust_mani', 'Mani', 'mani@example.test');
+        $sathis = $this->customer($merchant, 'cust_sathis', 'Sathis', 'sathis@example.test');
 
-        $this->subscription($merchant, $ada, $starter, $monthStart, $monthStart->addMonthNoOverflow());
-        $this->subscription($merchant, $ben, $growth, $monthStart, $monthStart->addMonthNoOverflow());
-        $this->subscription($merchant, $churnRisk, $starter, $monthStart, $monthStart->addMonthNoOverflow());
-        $this->subscription($merchant, $billingDemo, $starter, $previousMonthStart, $monthStart);
+        $this->subscription($merchant, $palani, $starter, $monthStart, $monthStart->addMonthNoOverflow());
+        $this->subscription($merchant, $raj, $growth, $monthStart, $monthStart->addMonthNoOverflow());
+        $this->subscription($merchant, $santhosh, $starter, $monthStart, $monthStart->addMonthNoOverflow());
+        $this->subscription($merchant, $mani, $growth, $monthStart, $monthStart->addMonthNoOverflow());
+        $this->subscription($merchant, $sathis, $starter, $monthStart, $monthStart->addMonthNoOverflow());
+        $this->subscription($merchant, $sathis, $starter, $previousMonthStart, $monthStart);
 
-        $this->dailyUsage($merchant, $ada, $currentUsageDate, 150);
-        $this->dailyUsage($merchant, $ben, $currentUsageDate, 100);
-        $this->dailyUsage($merchant, $churnRisk, $currentUsageDate, 90);
-        $this->dailyUsage($merchant, $ada, $previousUsageDate, 300);
-        $this->dailyUsage($merchant, $ben, $previousUsageDate, 100);
-        $this->dailyUsage($merchant, $churnRisk, $previousUsageDate, 200);
-        $this->dailyUsage($merchant, $billingDemo, $previousMonthStart->addDays(4), 120);
+        $this->dailyUsage($merchant, $palani, $currentUsageDate, 150);
+        $this->dailyUsage($merchant, $raj, $currentUsageDate, 100);
+        $this->dailyUsage($merchant, $santhosh, $currentUsageDate, 90);
+        $this->dailyUsage($merchant, $mani, $currentUsageDate, 80);
+        $this->dailyUsage($merchant, $sathis, $currentUsageDate, 70);
+        $this->dailyUsage($merchant, $palani, $previousUsageDate, 300);
+        $this->dailyUsage($merchant, $raj, $previousUsageDate, 100);
+        $this->dailyUsage($merchant, $santhosh, $previousUsageDate, 200);
+        $this->dailyUsage($merchant, $mani, $previousUsageDate, 180);
+        $this->dailyUsage($merchant, $sathis, $previousMonthStart->addDays(4), 120);
     }
 
     private function plan(Merchant $merchant, string $name, int $basePriceCents, int $includedUnits, int $overageRateCents): Plan

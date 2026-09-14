@@ -84,7 +84,7 @@ Redis supports queues and cached current plan pricing.
 Usage requests need the headers below:
 
 ```http
-X-API-Key: demo-acme-api-key
+X-API-Key: demo-palani-api-key
 Idempotency-Key: a-client-generated-unique-value
 Content-Type: application/json
 ```
@@ -93,7 +93,7 @@ Required usage payload:
 
 ```json
 {
-  "customer_external_id": "cust_ada",
+  "customer_external_id": "cust_palani",
   "quantity": 42,
   "occurred_at": "2026-09-14T08:30:00Z",
   "metadata": {"source": "client-system"}
